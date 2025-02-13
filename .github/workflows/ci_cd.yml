@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Pytest
-        run: pytest --exitfirst --verbose
+        run: pytest --verbose
 
   deploy:
     name: Deploy API
