@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: true 
     name: Continuous Integration
-    timeout-minutes: 10  # Add overall job timeout
+    timeout-minutes: 15  # Add overall job timeout
     
     steps:
     - uses: actions/checkout@v3
