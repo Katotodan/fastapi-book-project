@@ -56,12 +56,33 @@ jobs:
         script: |
           cd /home/ubuntu/fastapi-book-project
           git pull origin main
-          cd ..
-          source venv/bin/activate
+          source ../venv/bin/activate
           sudo apt-get update
           sudo apt install python3-pip
-          cd fastapi-book-project
           pip install -r requirements.txt
-          sudo service nginx restart
-          # Run uvicorn in the background with systemd or supervisor instead
-          sudo systemctl restart fastapi  # Assuming you have a systemd service configured
+          sudo systemctl restart nginx
+          # Check if service exists before trying to restart it
+          if systemctl list-unit-files | grep -q fastapi.service; then
+            sudo systemctl restart fastapi
+          else
+            echo "FastAPI service not found. Creating service..."
+            sudo tee /etc/systemd/system/fastapi.service << EOF
+            [Unit]
+            Description=FastAPI Application
+            After=network.target
+
+            [Service]
+            User=ubuntu
+            WorkingDirectory=/home/ubuntu/fastapi-book-project
+            Environment="PATH=/home/ubuntu/venv/bin"
+            ExecStart=/home/ubuntu/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+            Restart=always
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+            
+            sudo systemctl daemon-reload
+            sudo systemctl enable fastapi
+            sudo systemctl start fastapi
+          fi
