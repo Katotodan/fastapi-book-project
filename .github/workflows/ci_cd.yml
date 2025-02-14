@@ -24,12 +24,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest
+        pip install pytest pytest-timeout
         
     - name: Run tests
       timeout-minutes: 5  # Add step timeout
       run: |
-        pytest
+        pytest --timeout=30
         
   cd:
     needs: ci
