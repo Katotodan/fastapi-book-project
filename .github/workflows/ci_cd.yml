@@ -30,7 +30,7 @@ jobs:
         
     - name: Run tests
       run: |
-        pytest
+        pytest || exit 1
         
   cd:
     needs: ci
