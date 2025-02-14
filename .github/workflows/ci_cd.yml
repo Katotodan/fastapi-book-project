@@ -20,11 +20,17 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-
+      
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install flake8
+      
+      - name: Run Linter
+        run: |
+          pip install flake8
+          flake8 . --max-line-length=100 --exclude=venv
 
       - name: Run Pytest
         run: pytest --verbose
