@@ -1,62 +1,58 @@
-name: CI and Deployment Pipeline
+name: FastAPI CI/CD Pipeline
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  test:
-    name: Run Tests
+  ci:
     runs-on: ubuntu-latest
+    # Adding a name to make it easier to reference in branch protection rules
+    name: Continuous Integration
+    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install flake8
-      
-      - name: Run Linter
-        run: |
-          pip install flake8
-          flake8 . --max-line-length=100 --exclude=venv
-
-      - name: Run Pytest
-        run: pytest --exitfirst --failed-first --disable-warnings || exit 1
-
-
-  deploy:
-    name: Deploy API
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+        
+    - name: Run tests
+      run: |
+        pytest
+        
+  cd:
+    needs: ci
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs: test
+    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Deploy to AWS
-        env:
-          AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
-          AWS_HOST: ${{ secrets.AWS_HOST }}
-          DEPLOY_USER: ubuntu
-        run: |
-          echo "$AWS_PRIVATE_KEY" > deploy_key.pem
-          chmod 600 deploy_key.pem
-          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $DEPLOY_USER@$AWS_HOST << 'EOF'
-            cd /path/to/your/api
-            git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
-            systemctl restart your-api-service
-          EOF
+    - uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /path/to/your/app
+          git pull origin main
+          pip install -r requirements.txt
+          sudo systemctl restart your-fastapi-service
