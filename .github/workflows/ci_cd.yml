@@ -33,7 +33,8 @@ jobs:
           flake8 . --max-line-length=100 --exclude=venv
 
       - name: Run Pytest
-        run: --exitfirst --failed-first --disable-warnings
+        run: pytest --exitfirst --failed-first --disable-warnings || exit 1
+
 
   deploy:
     name: Deploy API
