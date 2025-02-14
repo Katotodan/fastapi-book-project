@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  ci:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15  # Add explicit timeout 
     name: Continuous Integration
@@ -30,8 +30,8 @@ jobs:
         # Run tests and store the exit code
         pytest tests/ || exit 1
         
-  deploy:
-    needs: ci
+  cd:
+    needs: deploy
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 10
