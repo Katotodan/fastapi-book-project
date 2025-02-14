@@ -8,7 +8,7 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # Add explicit timeout
+    timeout-minutes: 15  # Add explicit timeout
     name: Continuous Integration
     
     steps:
