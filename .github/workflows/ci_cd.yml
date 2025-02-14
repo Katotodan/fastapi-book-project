@@ -1,18 +1,16 @@
 name: FastAPI CI/CD Pipeline
-
 on:
   pull_request:
     branches: [ main ]
   push:
     branches: [ main ]
-
 jobs:
   ci:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true 
-    # Adding a name to make it easier to reference in branch protection rules
     name: Continuous Integration
+    timeout-minutes: 10  # Add overall job timeout
     
     steps:
     - uses: actions/checkout@v3
@@ -29,19 +27,15 @@ jobs:
         pip install pytest
         
     - name: Run tests
+      timeout-minutes: 5  # Add step timeout
       run: |
-        pytest || exit 1
-        EXIT_CODE=$?
-        echo "Pytest exit code: $EXIT_CODE"
-        if [ $EXIT_CODE -ne 0 ]; then
-          echo "Tests failed. Exiting..."
-          exit $EXIT_CODE
-        fi
+        pytest
         
   cd:
     needs: ci
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15  # Add deployment timeout
     
     steps:
     - uses: actions/checkout@v3
@@ -69,4 +63,5 @@ jobs:
           cd fastapi-book-project
           pip install -r requirements.txt
           sudo service nginx restart
-          python3 -m uvicorn main:app
+          # Run uvicorn in the background with systemd or supervisor instead
+          sudo systemctl restart fastapi  # Assuming you have a systemd service configured
