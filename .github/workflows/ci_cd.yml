@@ -60,29 +60,21 @@ jobs:
           sudo apt-get update
           sudo apt install python3-pip
           pip install -r requirements.txt
-          sudo systemctl restart nginx
-          # Check if service exists before trying to restart it
-          if systemctl list-unit-files | grep -q fastapi.service; then
-            sudo systemctl restart fastapi
+          sudo service nginx restart
+          
+          # Kill any existing uvicorn process
+          pkill -f "uvicorn main:app" || true
+          
+          # Start uvicorn in the background with nohup
+          nohup uvicorn main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+          
+          # Wait a moment and check if the process is running
+          sleep 5
+          if pgrep -f "uvicorn main:app" > /dev/null; then
+            echo "FastAPI application started successfully"
+            exit 0
           else
-            echo "FastAPI service not found. Creating service..."
-            sudo tee /etc/systemd/system/fastapi.service << EOF
-            [Unit]
-            Description=FastAPI Application
-            After=network.target
-
-            [Service]
-            User=ubuntu
-            WorkingDirectory=/home/ubuntu/fastapi-book-project
-            Environment="PATH=/home/ubuntu/venv/bin"
-            ExecStart=/home/ubuntu/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
-            Restart=always
-
-            [Install]
-            WantedBy=multi-user.target
-            EOF
-            
-            sudo systemctl daemon-reload
-            sudo systemctl enable fastapi
-            sudo systemctl start fastapi
+            echo "Failed to start FastAPI application"
+            cat app.log
+            exit 1
           fi
