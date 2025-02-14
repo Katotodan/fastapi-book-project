@@ -60,7 +60,13 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd /path/to/your/app
+          cd /home/ubuntu/fastapi-book-project
           git pull origin main
+          cd ..
+          source venv/bin/activate
+          sudo apt-get update
+          sudo apt install python3-pip
+          cd fastapi-book-project
           pip install -r requirements.txt
-          sudo systemctl restart your-fastapi-service
+          sudo service nginx restart
+          python3 -m uvicorn main:app
