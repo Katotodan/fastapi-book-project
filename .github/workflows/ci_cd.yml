@@ -6,7 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # Add explicit timeout 
+    timeout-minutes: 15  # Add explicit timeout
     name: Continuous Integration
     
     steps:
