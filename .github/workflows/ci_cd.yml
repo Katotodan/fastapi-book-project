@@ -30,7 +30,7 @@ jobs:
         # Run tests and store the exit code
         pytest tests/ || exit 1
         
-  cd:
+  deploy:
     needs: ci
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
