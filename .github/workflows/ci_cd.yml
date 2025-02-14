@@ -9,6 +9,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true 
     # Adding a name to make it easier to reference in branch protection rules
     name: Continuous Integration
     
